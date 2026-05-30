@@ -55,6 +55,12 @@
             </div>
         </div>
 
+        <div class="form-field">
+            {{ form.skills.label_tag }}
+            {{ form.skills }}
+            <small class="form-help">Введите навыки через запятую (например: Python, Django, JavaScript)</small>
+        </div>
+
         {% if form.errors %}
         <div class="form-errors">
             {% for field, errors in form.errors.items %}

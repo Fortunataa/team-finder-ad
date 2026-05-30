@@ -22,7 +22,7 @@
         <span class="filter-label">Фильтр по необходимым навыкам:</span>
         <div class="filter-chips">
             {% for skill in all_skills %}
-            <a href="?skill={{ skill }}"
+            <a href="?skill={{ skill|urlencode }}"
                class="filter-chip {% if active_skill == skill %}active{% endif %}">
                 {{ skill }}
             </a>
@@ -40,7 +40,7 @@
         {% include 'includes/empty-project-card.html' with empty_title="Пока нет проектов" empty_message="Создавайте проекты и делитесь ими с другими пользователями!" button_link="/projects/create-project" button_text="+ Создать проект" %}
         {% endfor %}
     </div>
-    {% include 'includes/project-fav-toggle.js' %}
+    {% include 'includes/project-fav-toggle.html' %}
 </div>
 
 {% endblock %}

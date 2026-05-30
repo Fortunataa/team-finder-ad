@@ -3,12 +3,13 @@
 
 {% block title %}{{ project.title }}{% endblock %}
 
+{% block page_id %}project{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/project_details.css' %}">
 <link rel="stylesheet" href="{% static 'css/skills.css' %}">
 {% endblock %}
 
-{% with page_id="project" %}
 {% block content %}
 <div class="project-container">
     <div class="project-card">
@@ -135,4 +136,3 @@
     </div>
 </div>
 {% endblock %}
-{% endwith %}
