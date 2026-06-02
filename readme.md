@@ -27,15 +27,31 @@
 
 ```bash
 git clone <url-репозитория>
-cd team-finder-ad-main
+cd team-finder-ad-main```
 
 ### 2. Запустите виртуальное окружение
 
 ```bash
-sourse venv/Scripts/activate
+sourse venv/Scripts/activate```
 
-### 3. Запустите сервер
+### 3. Запустите Docker (базу данных):
+
 ```bash
-python manage.py runserver
+docker compose up -d
+```
 
-### 4. Откройте в браузере: http://localhost:8000
+### 4. Примените миграции
+
+```bash
+python manage.py migrate```
+
+### 5. Создайте суперпользователя
+
+```bash
+python manage.py createsuperuser```
+
+### 6. Запустите сервер
+```bash
+python manage.py runserver```
+
+### 7. Откройте в браузере: http://localhost:8000
