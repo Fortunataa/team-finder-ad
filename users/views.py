@@ -1,17 +1,20 @@
-from django.shortcuts import render, redirect, get_object_or_404
+import json
+
+from constants import PROJECTS_PAGINATE_BY
 from django.contrib.auth import login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView as AuthLoginView
-from django.views.generic import CreateView, DetailView, UpdateView, \
-    ListView, View
 from django.http import JsonResponse
-from django.views.decorators.http import require_http_methods
-from django.utils.decorators import method_decorator
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-import json
+from django.utils.decorators import method_decorator
+from django.views.decorators.http import require_http_methods
+from django.views.generic import CreateView, DetailView, ListView, UpdateView, View
 
-from .models import User, Skill, Project
-from .forms import RegisterForm, LoginForm, ProfileEditForm, ChangePasswordForm
+from projects.models import Project, Skill, User
+
+from .forms import ChangePasswordForm, LoginForm, RegisterForm
+from projects.forms import ProfileEditForm
 
 
 @method_decorator(require_http_methods(["GET", "POST"]), name='dispatch')
@@ -95,7 +98,7 @@ class ParticipantsListView(ListView):
     model = User
     template_name = 'users/participants.html'
     context_object_name = 'participants'
-    paginate_by = 12
+    paginate_by = PROJECTS_PAGINATE_BY
 
     def get_queryset(self):
         queryset = User.objects.all()

@@ -1,14 +1,22 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import ListView, DetailView, \
-    CreateView, UpdateView, View
-from django.http import JsonResponse
-from django.views.decorators.http import require_http_methods
-from django.utils.decorators import method_decorator
-from django.urls import reverse
+from http import HTTPStatus
 import json
 
-from users.models import Project, Skill
+from constants import (
+    MAX_SKILLS_SEARCH_RESULTS,
+    PROJECT_STATUS_CLOSED,
+    PROJECT_STATUS_OPEN,
+    PROJECTS_PAGINATE_BY,
+)
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.utils.decorators import method_decorator
+from django.views.decorators.http import require_http_methods
+from django.views.generic import CreateView, DetailView, ListView, UpdateView, View
+
+from projects.models import Project, Skill
+
 from .forms import ProjectForm
 
 
@@ -16,15 +24,16 @@ class ProjectListView(ListView):
     model = Project
     template_name = 'projects/project_list.html'
     context_object_name = 'projects'
-    paginate_by = 12
+    paginate_by = PROJECTS_PAGINATE_BY
 
     def get_queryset(self):
-        queryset = Project.objects.filter(status='open')
+        queryset = (Project.objects
+                    .filter(status=PROJECT_STATUS_OPEN)
+                    .prefetch_related('skills', 'participants', 'favorites',
+                                      'owner'))
         skill_filter = self.request.GET.get('skill')
-
         if skill_filter:
             queryset = queryset.filter(skills__name=skill_filter)
-
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -42,7 +51,7 @@ class FavoriteProjectsView(LoginRequiredMixin, ListView):
     model = Project
     template_name = 'projects/favorite_projects.html'
     context_object_name = 'projects'
-    paginate_by = 12
+    paginate_by = PROJECTS_PAGINATE_BY
 
     def get_queryset(self):
         return self.request.user.favorite_projects.all()
@@ -109,7 +118,7 @@ class SkillSearchView(LoginRequiredMixin, View):
             return JsonResponse([])
         skills = list(
             Skill.objects
-            .filter(name__icontains=query)[:10]
+            .filter(name__icontains=query)[:MAX_SKILLS_SEARCH_RESULTS]
             .values('id', 'name'))
         return JsonResponse(skills, safe=False)
 
@@ -122,8 +131,8 @@ class SkillAddView(LoginRequiredMixin, View):
         if request.user.id != project.owner.id:
             return JsonResponse(
                 {'error': 'Только владелец может управлять навыками'},
-                status=403
-                )
+                status=HTTPStatus.FORBIDDEN
+            )
 
         data = json.loads(request.body)
         skill_id = data.get('skill_id')
@@ -166,7 +175,7 @@ class ParticipateView(LoginRequiredMixin, View):
     def post(self, request, project_id):
         project = get_object_or_404(Project, id=project_id)
 
-        if request.user in project.participants.all():
+        if project.participants.filter(id=request.user.id).exists():
             project.participants.remove(request.user)
             action = 'removed'
         else:
@@ -189,21 +198,22 @@ class CompleteProjectView(LoginRequiredMixin, View):
                 status=403
                 )
 
-        project.status = 'closed'
+        project.status = PROJECT_STATUS_CLOSED
         project.save()
 
-        return JsonResponse({'success': True, 'status': 'closed'})
+        return JsonResponse({'success': True, 'status': PROJECT_STATUS_CLOSED})
 
 
 class ToggleFavoriteView(LoginRequiredMixin, View):
     def post(self, request, project_id):
         project = get_object_or_404(Project, id=project_id)
 
-        if request.user in project.favorites.all():
-            project.favorites.remove(request.user)
-            is_favorite = False
-        else:
+        is_in_favorites = project.favorites.filter(id=request.user.id).exists()
+        is_favorite = not is_in_favorites
+
+        if is_favorite:
             project.favorites.add(request.user)
-            is_favorite = True
+        else:
+            project.favorites.remove(request.user)
 
         return JsonResponse({'is_favorite': is_favorite})

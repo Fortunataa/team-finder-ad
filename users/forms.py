@@ -1,17 +1,22 @@
+from constants import USER_NAME_MAX_LENGTH, USER_SURNAME_MAX_LENGTH
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from .models import User, Skill
+from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+
+from projects.models import Skill
+
+User = get_user_model()
 
 
 class RegisterForm(UserCreationForm):
     name = forms.CharField(
-        max_length=100,
+        max_length=USER_NAME_MAX_LENGTH,
         required=True,
         widget=forms.TextInput(attrs={'class': 'form-input',
                                       'placeholder': 'Введите имя'})
     )
     surname = forms.CharField(
-        max_length=100,
+        max_length=USER_SURNAME_MAX_LENGTH,
         required=True,
         widget=forms.TextInput(attrs={'class': 'form-input',
                                       'placeholder': 'Введите фамилию'})
@@ -75,72 +80,6 @@ class LoginForm(AuthenticationForm):
         widget=forms.PasswordInput(attrs={'class': 'form-input',
                                           'placeholder': 'Введите пароль'})
     )
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['username'].label = 'Email'
-        self.fields['password'].label = 'Пароль'
-
-
-class ProfileEditForm(forms.ModelForm):
-    skills = forms.CharField(
-        label='Навыки',
-        required=False,
-        widget=forms.TextInput(
-            attrs={
-                'class': 'form-input',
-                'placeholder': 'Введите навыки через запятую'
-                }
-            )
-        )
-
-    class Meta:
-        model = User
-        fields = ('name', 'surname', 'avatar', 'about', 'phone', 'github_url')
-        widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-input'}),
-            'surname': forms.TextInput(attrs={'class': 'form-input'}),
-            'avatar': forms.FileInput(attrs={'class': 'form-input-file'}),
-            'about': forms.Textarea(attrs={'class': 'form-textarea',
-                                           'rows': 4}),
-            'phone': forms.TextInput(attrs={'class': 'form-input'}),
-            'github_url': forms.URLInput(attrs={'class': 'form-input'}),
-        }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['name'].label = 'Имя'
-        self.fields['surname'].label = 'Фамилия'
-        self.fields['avatar'].label = 'Аватар'
-        self.fields['about'].label = 'О себе'
-        self.fields['phone'].label = 'Телефон'
-        self.fields['github_url'].label = 'GitHub'
-        self.fields['name'].required = True
-        self.fields['surname'].required = True
-
-        if self.instance and self.instance.pk:
-            current_skills = self.instance.skills.all()
-            self.fields['skills'].initial = ', '.join(
-                [skill.name for skill in current_skills]
-                )
-
-    def save(self, commit=True):
-        user = super().save(commit=commit)
-        skills_input = self.cleaned_data.get('skills', '')
-        if skills_input:
-            skill_names = [
-                name.strip()
-                for name in skills_input.split(',')
-                if name.strip()
-                ]
-            user.skills.clear()
-            for skill_name in skill_names:
-                skill, created = Skill.objects.get_or_create(name=skill_name)
-                user.skills.add(skill)
-        else:
-            user.skills.clear()
-
-        return user
 
 
 class ChangePasswordForm(forms.Form):

@@ -3,6 +3,8 @@ services:
     image: postgres:16
     env_file:
       - .env
+    environment:
+      POSTGRES_PASSWORD: mysecretpassword123
     container_name: teamfinder_db
     ports:
       - "5432:5432"
