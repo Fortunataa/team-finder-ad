@@ -24,7 +24,7 @@ class ProjectForm(forms.ModelForm):
         if not github_url:
             return github_url
 
-        github_pattern = r'^https?://(www\.)?github\.com/[\w\-\.]+/?$'
+        github_pattern = r'^https?://(www\.)?github\.com/[\w\-\.]+(/[\w\-\.]+)?/?$'
 
         if not re.match(github_pattern, github_url):
             raise ValidationErr(

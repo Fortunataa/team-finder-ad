@@ -7,6 +7,8 @@ from constants import (
 from django.contrib.auth.models import User
 from django.db import models
 
+from team_finder import settings
+
 
 class Skill(models.Model):
     name = models.CharField(max_length=SKILL_NAME_MAX_LEN, unique=True,
@@ -23,7 +25,7 @@ class Skill(models.Model):
 
 class Project(models.Model):
     owner = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='owned_projects',
         verbose_name='Автор проекта'
@@ -43,13 +45,13 @@ class Project(models.Model):
                                     related_name='projects', blank=True,
                                     verbose_name='Необходимые навыки')
     participants = models.ManyToManyField(
-        User,
+        settings.AUTH_USER_MODEL,
         related_name='participating_projects',
         blank=True,
         verbose_name='Участники проекта'
     )
     favorites = models.ManyToManyField(
-        User,
+        settings.AUTH_USER_MODEL,
         related_name='favorite_projects',
         blank=True,
         verbose_name='В избранном у'

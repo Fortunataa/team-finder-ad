@@ -63,7 +63,7 @@ class User(AbstractUser):
     is_staff = models.BooleanField(default=False, verbose_name='Администратор')
 
     skills = models.ManyToManyField(
-        'Skill',
+        'projects.Skill',
         related_name='users',
         blank=True,
         verbose_name='Навыки'

@@ -4,15 +4,14 @@ from constants import PROJECTS_PAGINATE_BY
 from django.contrib.auth import login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView as AuthLoginView
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_http_methods
 from django.views.generic import CreateView, DetailView, ListView, UpdateView, View
 
-from projects.forms import ProfileEditForm
-from projects.models import User
+from .forms import ProfileEditForm
+from .models import User
 
 from .forms import ChangePasswordForm, LoginForm, RegisterForm
 

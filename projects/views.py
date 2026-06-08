@@ -29,8 +29,8 @@ class ProjectListView(ListView):
     def get_queryset(self):
         queryset = (Project.objects
                     .filter(status=PROJECT_STATUS_OPEN)
-                    .select_related('skills', 'participants', 'favorites',
-                                    'owner'))
+                    .select_related('owner')
+                    .prefetch_related('skills', 'participants', 'favorites'))
         skill_filter = self.request.GET.get('skill')
         if skill_filter:
             queryset = queryset.filter(skills__name=skill_filter)
