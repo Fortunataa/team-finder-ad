@@ -29,8 +29,8 @@ class ProjectListView(ListView):
     def get_queryset(self):
         queryset = (Project.objects
                     .filter(status=PROJECT_STATUS_OPEN)
-                    .prefetch_related('skills', 'participants', 'favorites',
-                                      'owner'))
+                    .select_related('skills', 'participants', 'favorites',
+                                    'owner'))
         skill_filter = self.request.GET.get('skill')
         if skill_filter:
             queryset = queryset.filter(skills__name=skill_filter)
@@ -143,12 +143,16 @@ class SkillAddView(LoginRequiredMixin, View):
         elif skill_name:
             skill_name = skill_name.strip()
             if not skill_name:
-                return JsonResponse({'error': 'Название навыка не указано'},
-                                    status=400)
+                return JsonResponse(
+                    {'error': 'Название навыка не указано'},
+                    status=HTTPStatus.BAD_REQUEST
+                )
             skill, _ = Skill.objects.get_or_create(name=skill_name)
         else:
-            return JsonResponse({'error': 'Не указан skill_id или name'},
-                                status=400)
+            return JsonResponse(
+                {'error': 'Не указан skill_id или name'},
+                status=HTTPStatus.BAD_REQUEST
+            )
         project.skills.add(skill)
 
         return JsonResponse({'id': skill.id, 'name': skill.name})
@@ -162,8 +166,8 @@ class SkillRemoveView(LoginRequiredMixin, View):
         if request.user.id != project.owner.id:
             return JsonResponse(
                 {'error': 'Только владелец может управлять навыками'},
-                status=403
-                )
+                status=HTTPStatus.FORBIDDEN
+            )
 
         skill = get_object_or_404(Skill, id=skill_id)
         project.skills.remove(skill)
@@ -195,8 +199,8 @@ class CompleteProjectView(LoginRequiredMixin, View):
         if request.user.id != project.owner.id:
             return JsonResponse(
                 {'error': 'Только владелец может завершить проект'},
-                status=403
-                )
+                status=HTTPStatus.FORBIDDEN
+            )
 
         project.status = PROJECT_STATUS_CLOSED
         project.save()

@@ -11,10 +11,10 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_http_methods
 from django.views.generic import CreateView, DetailView, ListView, UpdateView, View
 
-from projects.models import Project, Skill, User
+from projects.forms import ProfileEditForm
+from projects.models import User
 
 from .forms import ChangePasswordForm, LoginForm, RegisterForm
-from projects.forms import ProfileEditForm
 
 
 @method_decorator(require_http_methods(["GET", "POST"]), name='dispatch')
